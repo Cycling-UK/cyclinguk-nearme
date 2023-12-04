@@ -1,0 +1,14 @@
+{
+  "name": "cycling_uk/nearme",
+  "description": "Custom Near Me mapping integration for Cycling UK",
+  "type": "drupal-module",
+  "minimum-stability": "dev",
+  "license": "GPL-2.0+",
+  "authors": [
+    {
+      "name": "Anthony Cartmell",
+      "homepage": "https://www.drupal.org/u/fonant",
+      "role": "Maintainer"
+    }
+  ]
+}
