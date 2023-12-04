@@ -1,0 +1,8 @@
+cyclinguk_nearme:
+  api_get_url_live: 'https://cycling-uk.cycle.travel/query'
+  api_get_url_test: 'https://cycling-uk-test.cycle.travel/query'
+  api_get_mode: 'test'
+  api_push_url_live: 'https://cycling-uk.cycle.travel/push'
+  api_push_url_test: 'https://cycling-uk-test.cycle.travel/push'
+  api_push_mode: 'test'
+  api_password: 'password'

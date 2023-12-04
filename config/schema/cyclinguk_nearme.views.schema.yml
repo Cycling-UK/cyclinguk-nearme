@@ -1,0 +1,28 @@
+
+views.filter_value.cyclinguk_nearme_type:
+  type: views.filter.in_operator
+  label: 'Types of geographical entity'
+
+
+views.filter_value.cyclinguk_nearme_pointradius:
+  type: views_filter
+  label: 'Latitude, longitude and radius'
+  mapping:
+    lat:
+      type: float
+      label: 'Latitude'
+    lon:
+      type: float
+      label: 'Longitude'
+    rad:
+      type: float
+      label: 'Radius'
+
+
+views.field.cyclinguk_nearme_node:
+  type: views_field
+  label: 'Node'
+  mapping:
+    link_to_node:
+      type: boolean
+      label: 'Link this field to the original piece of content'

@@ -1,0 +1,34 @@
+autocomplete:
+  css:
+    base:
+      'https://cycling-uk.cycle.travel/maps/third_party/autocomplete-theme-classic.css':
+        type: external
+        attributes:
+          crossorigin: anonymous
+  js:
+    'js/autocomplete.js': { attributes: { type: module } }
+    https://cycling-uk.cycle.travel/maps/third_party/autocomplete.js: { type: external }
+    https://kit.fontawesome.com/9a2e8d8cca.js: { type: external, attributes: { async: true, crossorigin: anonymous } }
+
+map:
+  css:
+    base:
+      'https://cycling-uk.cycle.travel/maps/third_party/maplibre-gl.css':
+        type: external
+        attributes:
+          crossorigin: anonymous
+    layout:
+      'https://cycling-uk.cycle.travel/maps/cycling_uk/prototype.css':
+        type: external
+        attributes:
+          crossorigin: anonymous
+      'https://cycling-uk.cycle.travel/maps/cycling_uk/responsive.css':
+        type: external
+        attributes:
+          crossorigin: anonymous
+  js:
+    https://cycling-uk.cycle.travel/maps/third_party/maplibre-gl.js: { type: external }
+    https://cycling-uk.cycle.travel/maps/third_party/autocomplete.js: { type: external }
+    https://cycling-uk.cycle.travel/maps/cycling_uk/scripts/app_bundle.js: { attributes: { type: module } }
+    https://cycling-uk.cycle.travel/maps/cycling_uk/scripts/simple_map.js: { attributes: { type: module } }
+

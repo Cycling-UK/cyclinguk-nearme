@@ -1,0 +1,7 @@
+cyclinguk_nearme_settings:
+  path: '/admin/config/services/cyclinguk_nearme'
+  defaults:
+    _form: '\Drupal\cyclinguk_nearme\Form\SettingsForm'
+    _title: 'Cycling UK Near Me'
+  requirements:
+    _permission: 'administer site configuration'

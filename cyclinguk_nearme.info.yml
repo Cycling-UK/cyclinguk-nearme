@@ -1,0 +1,8 @@
+name: Views integration for Cycling UK geographical database.
+description: Allows Views to be built using the https://cycling-uk.cycle.travel geographical API
+type: module
+core_version_requirement: ^9 || ^10
+package: Custom
+
+dependencies:
+  - drupal:views

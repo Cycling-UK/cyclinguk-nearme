@@ -1,0 +1,319 @@
+<?php
+
+/**
+ * @file
+ */
+
+use Drupal\Core\Entity\EntityMalformedException;
+use Drupal\node\Entity\Node;
+use Drupal\cyclinguk_nearme\Plugin\views\query\CyclingUkNearmeQuery;
+
+/**
+ * Implements hook_theme().
+ *
+ * @noinspection PhpUnused
+ * @noinspection PhpUnusedParameterInspection
+ */
+function cyclinguk_nearme_theme($existing, $type, $theme, $path): array {
+  return ['cyclinguk_nearme_map' => []];
+}
+
+
+/**
+ * Add new node data to https://cycling-uk.cycle.travel/
+ *
+ * Implements hook_ENTITY_TYPE_insert().
+ *
+ * @noinspection PhpUnused
+ */
+function cyclinguk_nearme_node_insert(Node $node): void {
+  cyclinguk_nearme_node_update($node);
+}
+
+/**
+ * Update node data on https://cycling-uk.cycle.travel/
+ *
+ * Implements hook_ENTITY_TYPE_update().
+ *
+ * @noinspection PhpUnused
+ */
+function cyclinguk_nearme_node_update(Node $node): void {
+  if ($node->getType() == 'route') {
+    $data = cyclinguk_nearme_assemble_node_data($node);
+    $config = \Drupal::config('cyclinguk_nearme.settings');
+    $json_array = ['password' => $config->get('cyclinguk_nearme.api_password'), 'data' => $data];
+    cyclinguk_nearme_cycle_travel_push($json_array);
+  }
+}
+
+/**
+ * Delete node data from https://cycling-uk.cycle.travel/
+ *
+ * Implements hook_ENTITY_TYPE_update().
+ *
+ * @noinspection PhpUnused
+ */
+function cyclinguk_nearme_node_delete(Node $node): void {
+  if ($node->getType() == 'route') {
+    $config = \Drupal::config('cyclinguk_nearme.settings');
+    $json_array = ['password' => $config->get('cyclinguk_nearme.api_password'), 'uuid' => $node->uuid()];
+    cyclinguk_nearme_cycle_travel_push($json_array);
+  }
+}
+
+/**
+ * Push data as JSON array to https://cycle.travel URL.
+ *
+ * @param $json_array
+ *
+ * @return void
+ */
+function cyclinguk_nearme_cycle_travel_push($json_array): void {
+  $config = \Drupal::config('cyclinguk_nearme.settings');
+  $mode = $config->get('cyclinguk_nearme.api_push_mode');
+  if ($mode === 'off') {
+    return;
+  }
+  if ($mode === 'live') {
+    $api_url = $config->get('cyclinguk_nearme.api_push_url_live');
+  }
+  else {
+    $api_url = $config->get('cyclinguk_nearme.api_push_url_test');
+  }
+  try {
+    $response = \Drupal::httpClient()->post($api_url, ['json' => $json_array]);
+    \Drupal::logger('cyclinguk_nearme')->info('Push to cycle.travel result: ' . $response->getBody());
+  } catch (\Exception $e) {
+    \Drupal::logger('cyclinguk_nearme')->error('Push to cycle.travel failed. ' . $e->getMessage());
+  }
+}
+
+/**
+ * @param \Drupal\node\Entity\Node $node
+ *
+ * @return array
+ */
+function cyclinguk_nearme_assemble_node_data(Node $node): array {
+  $data = [];
+  // Drupal bundles to cycle.travel contentType values.
+  $bundle_mappings = [
+    'area' => 'Area',
+    'route' => 'Route',
+    'poi' => 'Point of interest',
+    'event' => 'Event/Ride',
+    'group' => 'Group',
+    'article' => 'Post',
+  ];
+  // Drupal fields to cycle.travel data fields.
+  $field_mappings = [
+    'areaPolygon' => 'field_area',
+    'audaxCategory' => 'field_audax_category',
+    'body' => 'body',
+    'eventDate' => 'field_event_date',
+    'geofield' => 'field_geofield',
+    'startLocation' => 'field_start_location->value',
+    'image' => 'field_image',
+    'rideType' => 'field_ride_type_d7',
+    'eventType' => 'field_type_of_event',
+    'd7SiteUuid' => 'field_unique_id_d7',
+    'sticky' => 'sticky',
+    'lastUpdated' => 'changed',
+    'uuid' => 'uuid',
+    'd7SiteUrl' => 'field_d7_url_as_text',
+    'series' => 'field_event_series',
+    'surface' => 'field_event_surface',
+    'experienceContent' => 'field_experience_project_flag',
+    'groupActivities' => 'field_activities_of_group_d7',
+    'address' => 'field_address',
+    'amenities' => 'field_amenities',
+    'routeFeatures' => 'field_route_features',
+    'gpxFile' => 'field_gpx_file',
+    'routeDistance' => 'field_route_length',
+    'rideLevel' => 'field_ride_level',
+    'poiType' => 'field_poi_type',
+    'strava' => 'field_strava',
+    'teaser' => 'field_teaser',
+    'telephone' => 'field_telephone',
+    'groupType' => 'field_type_of_group_d7',
+    'website' => 'field_website',
+    'youTube' => 'field_youtube_social',
+    'img' => 'field_insert_media',
+    'gpxFilesD7' => 'field_d7_gpx_files_of_route',
+    'circularRoute' => 'field_cir',
+    'd7BikeType' => 'field_d7_bike_type',
+    'finishAddress' => 'field_d7_finish_address',
+    'd7RideLevel' => 'field_d7_ride_level',
+    'startAddress' => 'field_d7_start_address',
+    'lengthKm' => 'field_length_d7_km',
+    'lengthMiles' => 'field_length_d7_miles',
+    'routeClassification' => 'field_route_classification',
+    'locationData' => 'field_geo_data_holder',
+    'concealFromGeneralMaps' => 'field_conceal_from_general_maps',
+    'tags' => 'field_tags',
+    'downloadLink' => 'field_data_fence_url',
+    'groupSite' => 'field_group_website',
+    'facebook' => 'field_facebook',
+    'instagram' => 'field_instagram',
+    'twitter' => 'field_twitter',
+  ];
+  try {
+    $data = [
+      'contentType' => $bundle_mappings[$node->bundle()],
+      'title' => $node->getTitle(),
+      'nodeLink' => $node->toUrl()->toString(),
+    ];
+  } catch (EntityMalformedException $e) {
+    \Drupal::logger('cyclinguk_nearme')->error('Error constructing JSON data: ' . $e->getMessage());
+  }
+  foreach ($field_mappings as $key => $mapping) {
+    if ($mapping && $node->hasField($mapping)) {
+      $data[$key] = $node->get($mapping)->value;
+    }
+  }
+  if ($node->bundle() == 'area') {
+    $data['areaName'] = strtolower($node->getTitle());
+    unset($data['uuid']);
+  }
+  return $data;
+}
+
+/**
+ * @param $variables
+ *
+ * @return void
+ *
+ * @throws \JsonException
+ * @noinspection PhpUnused
+ */
+function template_preprocess_cyclinguk_nearme_map(&$variables): void {
+
+  $variables['#attached']['library'][] = 'cyclinguk_nearme/autocomplete';
+  $variables['#attached']['library'][] = 'cyclinguk_nearme/map';
+
+  /** @var \Drupal\views\ViewExecutable $view */
+  $view = $variables['view'];
+  $options = $view->getStyle()->options;
+
+  // Location and radius.
+  $result = reset($view->result); // Hack to put location and radius into result (map doesn't run a query).
+
+  $variables['map_height'] = $options['map_height'];
+  $variables['map_json']['preset'] = 'location';
+
+  $variables['map_json']['zoom'] = $options['zoom'];
+  $variables['map_json']['scrollproof'] = $options['scrollproof'];
+
+  //  Viewport and map configuration.
+  if ($result['type'] == 'latlonrad') {
+    /** @var array $pointradius */
+    $pointradius = $result['data'];
+    $variables['map_json']['lat'] = $pointradius['lat'];
+    $variables['map_json']['lon'] = $pointradius['lon'];
+    // Convert radius to zoom level.
+    // ToDo: convert miles to map zoom based on map width (so probably using JavaScript).
+    if ($pointradius['miles'] < 10) {
+      $variables['map_json']['zoom'] = 11;
+    }
+    elseif ($pointradius['miles'] < 20) {
+      $variables['map_json']['zoom'] = 9;
+    }
+    elseif ($pointradius['miles'] < 40) {
+      $variables['map_json']['zoom'] = 9;
+    }
+    elseif ($pointradius['miles'] < 80) {
+      $variables['map_json']['zoom'] = 8;
+    }
+    else {
+      $variables['map_json']['zoom'] = 7;
+    }
+  }
+
+  // Main content.
+  switch ($result['type']) {
+    case 'postcode':
+      $variables['map_json']['postcode'] = $result['data'];
+      break;
+    case 'route_id':
+      $variables['map_json']['routeID'] = $result['data'];
+      break;
+    // Not possible: 'route_name'
+    case 'area_name':
+      $variables['map_json']['areaName'] = $result['data'];
+      break;
+  }
+  // Types to display come from the Query, modified by any item type filter added to the View.
+
+  /** @var CyclingUkNearmeQuery $view_query */
+  $view_query = $view->getQuery();
+  if ($view_query) {
+    $item_types = $view_query->getItemTypes();
+    $variables['map_json']['showRoutes'] = in_array('routes', $item_types);
+    $variables['map_json']['showPOIs'] = in_array('pois', $item_types);
+    $variables['map_json']['showGroups'] = in_array('groups', $item_types);
+    $variables['map_json']['showEvents'] = in_array('events', $item_types);
+  }
+
+  $variables['map_json']['loadPois'] = (bool) $options['load_pois'];
+  $variables['map_json']['allRoutes'] = (bool) $options['show_all_routes'];
+  #$variables['map_json']['radius'] = 0.5;
+  #$variables['map_json']['tags'] = '';
+
+  $panel_options = [
+    'yes' => TRUE,
+    'no' => FALSE,
+    'closed' => 'closed',
+    'closed_mobile' => 'closed_mobile',
+  ];
+
+  // Side panel.
+  $variables['map_json']['sidepanel'] = $panel_options[$options['side_panel_details']['side_panel']];
+  if ($options['side_panel_details']['side_panel'] != 'no') {
+    $variables['map_json']['showPOISidepanel'] = (bool) $options['side_panel_details']['show_pois'];
+    $variables['map_json']['showRouteSidepanel'] = (bool) $options['side_panel_details']['show_routes'];
+    $variables['map_json']['expandSoloList'] = (bool) $options['side_panel_details']['expand_solo_list'];
+    $variables['map_json']['hideIfEmpty'] = (bool) $options['side_panel_details']['hide_if_empty'];
+    $variables['map_json']['preferRoutes'] = (bool) $options['side_panel_details']['prefer_routes'];
+    $variables['map_json']['preferFlagship'] = (bool) $options['side_panel_details']['prefer_flagship'];
+    $variables['map_json']['panToResults'] = (bool) $options['side_panel_details']['pan_to_results'];
+  }
+
+  // Map controls
+  $variables['map_json']['showIdeas'] = (bool) $options['map_controls']['show_ideas'];
+  $variables['map_json']['showSearch'] = (bool) $options['map_controls']['show_search'];
+  $variables['map_json']['showFullScreen'] = (bool) $options['map_controls']['show_fullscreen'];
+  if ($options['map_controls']['show_search']) {
+    $variables['map_json']['searchRoutes'] = (bool) $options['map_controls']['search_routes'];
+    $variables['map_json']['searchPOIs'] = (bool) $options['map_controls']['search_pois'];
+  }
+
+  // Filter panel.
+  $variables['map_json']['filterPanel'] = $panel_options[$options['filter_panel_details']['filter_panel']];
+  if ($options['filter_panel_details']['filter_panel'] != 'no') {
+    $variables['map_json']['showPOIFilter'] = (bool) $options['filter_panel_details']['filter_pois'];
+    $variables['map_json']['showRouteFilter'] = (bool) $options['filter_panel_details']['filter_routes'];
+    $variables['map_json']['showGroupFilter'] = (bool) $options['filter_panel_details']['filter_groups'];
+    $variables['map_json']['showEventFilter'] = $options['filter_panel_details']['filter_events'] && $options['show_types']['events'];
+  }
+
+  // Elevation
+  if ($options['elevation']) {
+    $variables['map_json']['elevation'] = TRUE;    // show elevation? (true, false, 'closed': requires routeID or routePlanner)
+  }
+
+  // JS interaction
+  if ($options['callback'] ?? FALSE) {
+    $variables['map_json']['callback'] = $options['callback'];
+  }
+
+  // Route-planner
+  if ($options['route_planner']) {
+    $variables['map_json']['routePlanner'] = TRUE;    // show route-planner?
+  }
+
+  // Feature flags for testing
+  if ($options['enable_sorting']) {
+    $variables['map_json']['enableSorting'] = TRUE;
+  }
+
+  $variables['map_json'] = json_encode($variables['map_json'], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
+}

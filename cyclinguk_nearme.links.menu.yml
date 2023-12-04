@@ -1,0 +1,5 @@
+cyclinguk_nearme_settings:
+  title: 'Cycling UK Near Me'
+  description: 'Manage settings for the integration with https://cycling-uk.cycle.travel geographical database'
+  parent: system.admin_config_services
+  route_name: cyclinguk_nearme_settings

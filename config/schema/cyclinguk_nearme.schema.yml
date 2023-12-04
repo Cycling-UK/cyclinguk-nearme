@@ -1,0 +1,25 @@
+cyclinguk_nearme_settings:
+  type: config_object
+  label: 'Cycling UK Near Me settings'
+  mapping:
+    api_get_url_live:
+      type: text
+      label: 'Live database URL for getting data for Views:'
+    api_get_url_test:
+      type: text
+      label: 'Test database URL for getting data for Views:'
+    api_get_mode:
+      type: text
+      label: 'Live or Test get mode:'
+    api_push_url_live:
+      type: text
+      label: 'Live database URL for updating data:'
+    api_push_url_test:
+      type: text
+      label: 'Test database URL for updating data:'
+    api_push_mode:
+      type: text
+      label: 'Live or Test or Off push mode:'
+    api_password:
+      type: text
+      label: 'API password:'
