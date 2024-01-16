@@ -3,6 +3,7 @@ description: Allows Views to be built using the https://cycling-uk.cycle.travel 
 type: module
 core_version_requirement: ^9 || ^10
 package: Custom
-version: '1.0'
 dependencies:
   - drupal:views
+
+version: '1.0'
