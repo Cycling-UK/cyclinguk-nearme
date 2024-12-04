@@ -85,6 +85,20 @@ class CyclingUkNearmeQuery extends QueryPluginBase {
   protected string $routeName = '';
 
   /**
+   * Required member variable for use by QueryPluginBase::setWhereGroup();
+   *
+   * @var array
+   */
+  protected array $where = [];
+
+  /**
+   * Required member variable for use by QueryPluginBase::setWhereGroup();
+   *
+   * @var array
+   */
+  protected array $having = [];
+
+  /**
    * Override SQL method to do nothing.
    *
    * @noinspection PhpUnusedParameterInspection
@@ -189,8 +203,7 @@ class CyclingUkNearmeQuery extends QueryPluginBase {
     try {
       $response = $client->request('get', $request_url);
       $response_code = $response->getStatusCode();
-    }
-    catch (RequestException $e) {
+    } catch (RequestException $e) {
       if ($e->hasResponse() && $e->getResponse()) {
         $message = Markup::create($this->t('Remote Server Error: %code <br>Query: %query <br>%error.', [
           '%code' => $e->getCode(),
@@ -203,16 +216,14 @@ class CyclingUkNearmeQuery extends QueryPluginBase {
       }
       $this->messenger()->addError($message);
       watchdog_exception('cyclinguk_nearme', $e);
-    }
-    catch (GuzzleException $e) {
+    } catch (GuzzleException $e) {
       watchdog_exception('cyclinguk_nearme', $e);
       return;
     }
     if ($response && $response_code == 200) {
       try {
         $data = json_decode($response->getBody()->getContents(), FALSE, 512, JSON_THROW_ON_ERROR);
-      }
-      catch (\JsonException $e) {
+      } catch (\JsonException $e) {
         watchdog_exception('cyclinguk_nearme', $e);
         return;
       }
@@ -225,8 +236,7 @@ class CyclingUkNearmeQuery extends QueryPluginBase {
       }
       try {
         $this->loadEntities($view->result);
-      }
-      catch (\Exception $e) {
+      } catch (\Exception $e) {
         watchdog_exception('cyclinguk_nearme', $e);
         return;
       }
@@ -261,17 +271,20 @@ class CyclingUkNearmeQuery extends QueryPluginBase {
         // 'index' key is required.
         $result->index = $index;
       }
-      // Tell view and pager how many results we have in total across all pages.
-      $view->total_rows = count($view->result);
-      $view->pager->total_items = $view->total_rows;
-      // Extract just this page's results.
-      if ($this->limit > 0) {
-        $view->result = array_slice($view->result, $this->offset, $this->limit);
+      if (isset($view->pager)) {
+        // Tell view and pager how many results we have in total across all pages.
+        $view->total_rows = count($view->result);
+        $view->pager->total_items = $view->total_rows;
+        // Extract just this page's results.
+        if ($this->limit > 0) {
+          $view->result = array_slice($view->result, $this->offset, $this->limit);
+        }
       }
     }
-    // Trigger pager postExecute() and updatePageInfo to create the pager object.
-    $view->pager->postExecute($view->result);
-    $view->pager->updatePageInfo();
+    if (isset($view->pager)) {// Trigger pager postExecute() and updatePageInfo to create the pager object.
+      $view->pager->postExecute($view->result);
+      $view->pager->updatePageInfo();
+    }
   }
 
   /**
