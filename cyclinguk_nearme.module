@@ -187,8 +187,8 @@ function cyclinguk_nearme_assemble_node_data(Node $node): array {
  */
 function template_preprocess_cyclinguk_nearme_map(&$variables): void {
 
-  $variables['#attached']['library'][] = 'cyclinguk_nearme/autocomplete';
-  $variables['#attached']['library'][] = 'cyclinguk_nearme/map';
+  $variables['#attached']['library'][] = 'cycle_travel_mapping/autocomplete';
+  $variables['#attached']['library'][] = 'cycle_travel_mapping/map';
 
   /** @var \Drupal\views\ViewExecutable $view */
   $view = $variables['view'];

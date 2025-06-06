@@ -74,7 +74,7 @@ class CyclingUkNearmePointRadiusFilter extends FilterPluginBase {
       '#suffix' => '</div>',
       '#default_value' => '',
       '#attached' => [
-        'library' => 'cyclinguk_nearme/autocomplete',
+        'library' => 'cycle_travel_mapping/autocomplete',
       ],
     ];
     $placename = $this->value['placename'] ?? '';
