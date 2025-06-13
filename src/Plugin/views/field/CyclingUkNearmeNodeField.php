@@ -2,6 +2,7 @@
 
 namespace Drupal\cyclinguk_nearme\Plugin\views\field;
 
+use Drupal\Component\Render\MarkupInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\node\Plugin\views\field\Node;
 use Drupal\views\ResultRow;
@@ -31,7 +32,7 @@ class CyclingUkNearmeNodeField extends Node {
    * an additional "nid" field... might not be needed if the same thing can be done in hook_views_data()
    * in cyclinguk_nearme.views.inc?
    */
-  public function render(ResultRow $values) {
+  public function render(ResultRow $values): MarkupInterface|string {
     if ($values->_entity) {
       $this->additional_fields['nid'] = TRUE;
       $this->aliases['nid'] = 'nid';

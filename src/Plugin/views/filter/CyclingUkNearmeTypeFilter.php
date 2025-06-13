@@ -2,6 +2,7 @@
 
 namespace Drupal\cyclinguk_nearme\Plugin\views\filter;
 
+use Drupal\views\Annotation\ViewsFilter;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\Plugin\views\filter\InOperator;
 use Drupal\views\ViewExecutable;

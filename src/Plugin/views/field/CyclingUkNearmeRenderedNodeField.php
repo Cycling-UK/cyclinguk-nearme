@@ -2,7 +2,9 @@
 
 namespace Drupal\cyclinguk_nearme\Plugin\views\field;
 
+use Drupal\Component\Render\MarkupInterface;
 use Drupal\Core\Render\Markup;
+use Drupal\views\Annotation\ViewsField;
 use Drupal\views\Plugin\views\field\RenderedEntity;
 use Drupal\views\ResultRow;
 
@@ -19,7 +21,7 @@ class CyclingUkNearmeRenderedNodeField extends RenderedEntity {
   /**
    * We don't want to do anything with SQL here, we're using an external API.
    */
-  public function query() {
+  public function query(): void {
   }
 
   /**
@@ -27,19 +29,18 @@ class CyclingUkNearmeRenderedNodeField extends RenderedEntity {
    *
    * Needed because we might not match a node, and a NULL _entity causes errors.
    */
-  public function render(ResultRow $values) {
+  public function render(ResultRow $values): MarkupInterface {
     if ($values->_entity) {
       return parent::render($values);
     }
-    else {
-      return Markup::create('<i>Node not found</i>');
-    }
+    return Markup::create('<i>Node not found</i>');
   }
 
   /**
    * We're only rendering nodes here.
    */
-  public function getEntityType() {
-   return 'node';
+  public function getEntityType(): string {
+    return 'node';
   }
+
 }

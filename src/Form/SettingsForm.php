@@ -81,6 +81,11 @@ class SettingsForm extends ConfigFormBase {
       '#title' => $this->t('API password'),
       '#default_value' => $config->get('cyclinguk_nearme.api_password'),
     ];
+    $form['debug_messages'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Display debug messages (GET URL, results data, map configuration).'),
+      '#default_value' => $config->get('cyclinguk_nearme.debug_messages'),
+    ];
     return $form;
   }
 
@@ -103,6 +108,7 @@ class SettingsForm extends ConfigFormBase {
     $config->set('cyclinguk_nearme.api_push_url_test', $form_state->getValue('api_push_url_test'));
     $config->set('cyclinguk_nearme.api_push_mode', $form_state->getValue('api_push_mode'));
     $config->set('cyclinguk_nearme.api_password', $form_state->getValue('api_password'));
+    $config->set('cyclinguk_nearme.debug_messages', $form_state->getValue('debug_messages'));
     $config->save();
     parent::submitForm($form, $form_state);
   }

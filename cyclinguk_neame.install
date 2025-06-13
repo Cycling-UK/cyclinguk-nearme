@@ -1,0 +1,12 @@
+<?php
+
+/**
+ * Add fruit to the default configuration for example.module.
+ */
+function cyclinguk_nearme_update_10001() {
+  // Add "debug_messages" to configuration schema.
+  $config_factory = \Drupal::configFactory();
+  $config = $config_factory->getEditable('cyclinguk_nearme.settings');
+  $config->set('debug_messages', FALSE);
+  $config->save(TRUE);
+}

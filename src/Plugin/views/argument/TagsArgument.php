@@ -2,15 +2,19 @@
 
 namespace Drupal\cyclinguk_nearme\Plugin\views\argument;
 
+use Drupal\cyclinguk_nearme\Plugin\views\query\CyclingUkNearmeQuery;
 use Drupal\views\Annotation\ViewsArgument;
 use Drupal\views\Plugin\views\argument\StringArgument;
 
 /**
  * Argument handler to accept a node type.
  *
- * @ViewsArgument("cyclinguk_nearme_area_id_argument")
+ * @ViewsArgument("cyclinguk_nearme_tags_argument")
  */
-class AreaIdArgument extends StringArgument {
+class TagsArgument extends StringArgument {
+
+  /** @var $query CyclingUkNearmeQuery */
+  public $query;
 
   /**
    * Modify the "query" when this argument is used.
@@ -19,7 +23,7 @@ class AreaIdArgument extends StringArgument {
    *
    */
   public function query($group_by = FALSE): void {
-    $this->query->addWhere(NULL, 'area_id', $this->value[0]);
+    $this->query->addTags($this->value[0]);
   }
 
 }

@@ -5,8 +5,10 @@
  */
 
 use Drupal\Core\Entity\EntityMalformedException;
+use Drupal\Core\Render\Markup;
 use Drupal\node\Entity\Node;
 use Drupal\cyclinguk_nearme\Plugin\views\query\CyclingUkNearmeQuery;
+use GuzzleHttp\Exception\GuzzleException;
 
 /**
  * Implements hook_theme().
@@ -38,9 +40,9 @@ function cyclinguk_nearme_node_insert(Node $node): void {
  * @noinspection PhpUnused
  */
 function cyclinguk_nearme_node_update(Node $node): void {
-  if ($node->getType() == 'route') {
+  if ($node->getType() === 'route') {
     $data = cyclinguk_nearme_assemble_node_data($node);
-    $config = \Drupal::config('cyclinguk_nearme.settings');
+    $config = Drupal::config('cyclinguk_nearme.settings');
     $json_array = ['password' => $config->get('cyclinguk_nearme.api_password'), 'data' => $data];
     cyclinguk_nearme_cycle_travel_push($json_array);
   }
@@ -54,8 +56,8 @@ function cyclinguk_nearme_node_update(Node $node): void {
  * @noinspection PhpUnused
  */
 function cyclinguk_nearme_node_delete(Node $node): void {
-  if ($node->getType() == 'route') {
-    $config = \Drupal::config('cyclinguk_nearme.settings');
+  if ($node->getType() === 'route') {
+    $config = Drupal::config('cyclinguk_nearme.settings');
     $json_array = ['password' => $config->get('cyclinguk_nearme.api_password'), 'uuid' => $node->uuid()];
     cyclinguk_nearme_cycle_travel_push($json_array);
   }
@@ -69,7 +71,7 @@ function cyclinguk_nearme_node_delete(Node $node): void {
  * @return void
  */
 function cyclinguk_nearme_cycle_travel_push($json_array): void {
-  $config = \Drupal::config('cyclinguk_nearme.settings');
+  $config = Drupal::config('cyclinguk_nearme.settings');
   $mode = $config->get('cyclinguk_nearme.api_push_mode');
   if ($mode === 'off') {
     return;
@@ -81,10 +83,10 @@ function cyclinguk_nearme_cycle_travel_push($json_array): void {
     $api_url = $config->get('cyclinguk_nearme.api_push_url_test');
   }
   try {
-    $response = \Drupal::httpClient()->post($api_url, ['json' => $json_array]);
-    \Drupal::logger('cyclinguk_nearme')->info('Push to cycle.travel result: ' . $response->getBody());
-  } catch (\Exception $e) {
-    \Drupal::logger('cyclinguk_nearme')->error('Push to cycle.travel failed. ' . $e->getMessage());
+    $response = Drupal::httpClient()->post($api_url, ['json' => $json_array]);
+    Drupal::logger('cyclinguk_nearme')->info('Push to cycle.travel result: ' . $response->getBody());
+  } catch (GuzzleException $e) {
+    Drupal::logger('cyclinguk_nearme')->error('Push to cycle.travel failed. ' . $e->getMessage());
   }
 }
 
@@ -163,14 +165,14 @@ function cyclinguk_nearme_assemble_node_data(Node $node): array {
       'nodeLink' => $node->toUrl()->toString(),
     ];
   } catch (EntityMalformedException $e) {
-    \Drupal::logger('cyclinguk_nearme')->error('Error constructing JSON data: ' . $e->getMessage());
+    Drupal::logger('cyclinguk_nearme')->error('Error constructing JSON data: ' . $e->getMessage());
   }
   foreach ($field_mappings as $key => $mapping) {
     if ($mapping && $node->hasField($mapping)) {
       $data[$key] = $node->get($mapping)->value;
     }
   }
-  if ($node->bundle() == 'area') {
+  if ($node->bundle() === 'area') {
     $data['areaName'] = strtolower($node->getTitle());
     unset($data['uuid']);
   }
@@ -189,22 +191,26 @@ function template_preprocess_cyclinguk_nearme_map(&$variables): void {
 
   $variables['#attached']['library'][] = 'cycle_travel_mapping/autocomplete';
   $variables['#attached']['library'][] = 'cycle_travel_mapping/map';
+  $variables['#attached']['library'][] = 'cyclinguk_nearme/autocomplete';
+  $variables['#attached']['library'][] = 'cyclinguk_nearme/map';
 
   /** @var \Drupal\views\ViewExecutable $view */
   $view = $variables['view'];
   $options = $view->getStyle()->options;
 
   // Location and radius.
-  $result = reset($view->result); // Hack to put location and radius into result (map doesn't run a query).
+  $result = reset($view->result); // Hack to put relevant data into result (map doesn't run a query).
 
   $variables['map_height'] = $options['map_height'];
-  $variables['map_json']['preset'] = 'location';
+  if ($options['preset'] !== 'none') {
+    $variables['map_json']['preset'] = $options['preset'];
+  }
 
   $variables['map_json']['zoom'] = $options['zoom'];
   $variables['map_json']['scrollproof'] = $options['scrollproof'];
 
   //  Viewport and map configuration.
-  if ($result['type'] == 'latlonrad') {
+  if ($result['type'] === 'latlonrad') {
     /** @var array $pointradius */
     $pointradius = $result['data'];
     $variables['map_json']['lat'] = $pointradius['lat'];
@@ -251,12 +257,15 @@ function template_preprocess_cyclinguk_nearme_map(&$variables): void {
     $variables['map_json']['showPOIs'] = in_array('pois', $item_types);
     $variables['map_json']['showGroups'] = in_array('groups', $item_types);
     $variables['map_json']['showEvents'] = in_array('events', $item_types);
+    $tags = $view_query->getTagsArray();
+    if ($tags) {
+      $variables['map_json']['tags'] = $tags;
+    }
   }
 
   $variables['map_json']['loadPois'] = (bool) $options['load_pois'];
   $variables['map_json']['allRoutes'] = (bool) $options['show_all_routes'];
   #$variables['map_json']['radius'] = 0.5;
-  #$variables['map_json']['tags'] = '';
 
   $panel_options = [
     'yes' => TRUE,
@@ -267,7 +276,7 @@ function template_preprocess_cyclinguk_nearme_map(&$variables): void {
 
   // Side panel.
   $variables['map_json']['sidepanel'] = $panel_options[$options['side_panel_details']['side_panel']];
-  if ($options['side_panel_details']['side_panel'] != 'no') {
+  if ($options['side_panel_details']['side_panel'] !== 'no') {
     $variables['map_json']['showPOISidepanel'] = (bool) $options['side_panel_details']['show_pois'];
     $variables['map_json']['showRouteSidepanel'] = (bool) $options['side_panel_details']['show_routes'];
     $variables['map_json']['expandSoloList'] = (bool) $options['side_panel_details']['expand_solo_list'];
@@ -288,7 +297,7 @@ function template_preprocess_cyclinguk_nearme_map(&$variables): void {
 
   // Filter panel.
   $variables['map_json']['filterPanel'] = $panel_options[$options['filter_panel_details']['filter_panel']];
-  if ($options['filter_panel_details']['filter_panel'] != 'no') {
+  if ($options['filter_panel_details']['filter_panel'] !== 'no') {
     $variables['map_json']['showPOIFilter'] = (bool) $options['filter_panel_details']['filter_pois'];
     $variables['map_json']['showRouteFilter'] = (bool) $options['filter_panel_details']['filter_routes'];
     $variables['map_json']['showGroupFilter'] = (bool) $options['filter_panel_details']['filter_groups'];
@@ -316,4 +325,10 @@ function template_preprocess_cyclinguk_nearme_map(&$variables): void {
   }
 
   $variables['map_json'] = json_encode($variables['map_json'], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
+
+  if (Drupal::config('cyclinguk_nearme.settings')->get('cyclinguk_nearme.debug_messages')) {
+    $html = 'DEBUG: MAP configuration JSON: <pre style="font-size: 85%; line-height: 1.2;">' . print_r($variables['map_json'], TRUE) . '</pre>';
+    $message_html = Markup::create($html);
+    Drupal::messenger()->addStatus($message_html);
+  }
 }

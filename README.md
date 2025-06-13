@@ -32,6 +32,7 @@ underneath by adding View Attachments with required display formats.
 * **Near point**: Specify a latitude, longitude and radius for the search. If exposed, this filter swaps the latitude
   and longitude inputs for a placename input which uses AJAX autocompletion and geocoding to set the location.
 * **Geographical item type**: Show just routes, places, events, groups, areas, or any combination. Can be exposed.
+* **Tags**: Show only items with specified tags. Comma-separated list of tags (which may contain spaces).
 
 ### Contextual filters
 
@@ -39,6 +40,7 @@ underneath by adding View Attachments with required display formats.
 * **Area name**: Specify an area name to return items within that area (e.g. "Kent").
 * **Route UUID**: Specify a route UUID to return items near that route (e.g. "6c28b0e1-5db4-4b52-8839-b7371ed6c7b6").
 * **Route name**: Specify a route name to return items near that route (e.g. "King Alfred's Way").
+* **Tags**: Show only items with specified tags. Comma-separated list of tags (which may contain spaces).
 
 ### Formats
 

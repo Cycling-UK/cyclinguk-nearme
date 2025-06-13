@@ -4,6 +4,14 @@ views.filter_value.cyclinguk_nearme_type:
   label: 'Types of geographical entity'
 
 
+views.filter_value.cyclinguk_nearme_tags:
+  type: views_filter
+  label: 'Tags'
+  mapping:
+    tags:
+      type: string
+      label: 'Tags'
+
 views.filter_value.cyclinguk_nearme_pointradius:
   type: views_filter
   label: 'Latitude, longitude and radius'

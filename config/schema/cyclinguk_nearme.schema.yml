@@ -23,3 +23,6 @@ cyclinguk_nearme_settings:
     api_password:
       type: text
       label: 'API password:'
+    debug_messages:
+      type: boolean
+      label: 'Debug messages:'

@@ -32,6 +32,7 @@ class CyclingUkNearmeMapStyle extends StylePluginBase {
     $options = parent::defineOptions();
     $options['map_height'] = ['default' => '500px'];
     $options['zoom'] = ['default' => 8];
+    $options['preset'] = ['default' => 'none'];
     $options['load_pois'] = ['default' => TRUE];
     $options['show_all_routes'] = ['default' => TRUE];
     $options['scrollproof'] = ['default' => TRUE];
@@ -88,6 +89,26 @@ class CyclingUkNearmeMapStyle extends StylePluginBase {
       '#title' => $this->t('Zoom level'),
       '#type' => 'number',
       '#default_value' => $this->options['zoom'],
+    ];
+    $form['preset'] = [
+      '#title' => $this->t('Preset'),
+      '#description' => $this->t('Load a set of pre-defined map settings.'),
+      '#type' => 'select',
+      '#options' => [
+        'none' => '(none)',
+        'county' => 'County',
+        'area' => 'Area',
+        'route' => 'Route',
+        'poi' => 'Points of interest',
+        'poi_single' => 'Point of interest',
+        'location' => 'Location',
+        'hub' => 'Hub',
+        'multiple' => 'Multiple',
+        'specified' => 'Specified',
+        'route_planner' => 'Route Planner',
+        'campaigns' => 'Campaigns',
+      ],
+      '#default_value' => $this->options['preset'],
     ];
     $form['load_pois'] = [
       '#type' => 'checkbox',

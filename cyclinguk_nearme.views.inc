@@ -44,6 +44,16 @@ function cyclinguk_nearme_views_data(): array {
       'help' => t("E.g. Event, Route, Place, etc."),
     ],
   ];
+  $data['cyclinguk_nearme']['tags'] = [
+    'title' => t('Geographical item tags'),
+    'help' => t("Tags applied to items."),
+    'filter' => [
+      'id' => 'cyclinguk_nearme_tags',
+    ],
+    'argument' => [
+      'id' => 'cyclinguk_nearme_tags_argument',
+    ],
+  ];
   $data['cyclinguk_nearme']['pointradius'] = [
     'title' => t('Near point'),
     'help' => t('Specify geographical latitude and longitude for results to be within radius of, or map display centered on.'),

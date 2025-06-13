@@ -1,3 +1,43 @@
+## Search API
+
+https://cycling-uk.cycle.travel/query?*<the location request\>*&content=*pois,events,groups,routes*
+
+The location request can be:
+
+* bounds=*\<w,s,e,n\>*
+* lat=*\<num\>*&lon=*\<num\>*&radius=*\<num\>*
+* route=*\<drupal_id\>*&radius=*\<num\>*
+* route_name=*\<string\>*&radius=*\<num\>*
+* area=*\<drupal_uuid\>*
+* area_name=*\<string\>*
+
+And the content can be any of pois,events,groups,routes,areas, comma-separated.
+
+It returns a JSON document with the Drupal node IDs in, which should be fairly self-explanatory.
+
+A few examples:
+
+* All content within the specified bounding box:
+
+  https://cycling-uk.cycle.travel/query?bounds=-1,50,1,52&content=routes,pois,events,groups
+
+* All content within 0.1 degrees of 51.5,-1.5:
+
+  https://cycling-uk.cycle.travel/query?lon=-1.5&lat=51.5&radius=0.1&content=routes,pois,events,groups
+
+* all content within Oxfordshire
+
+  https://cycling-uk.cycle.travel/query?area_name=Oxfordshire&content=routes,pois,events,groups
+
+* Content within 0.1 degrees of the 'Edinburgh all-ability loop' route:
+
+  https://cycling-uk.cycle.travel/query?route_name=Edinburgh%20all-ability%20loop&radius=0.1&content=pois,events,groups
+
+* Content within 0.5 degrees of King Alfred's Way:
+
+  https://cycling-uk.cycle.travel/query?route=6c28b0e1-5db4-4b52-8839-b7371ed6c7b6&radius=0.5&content=pois,events,groups
+
+
 ## Example JSON Data returned from a Search
 
 Search: https://cycling-uk.cycle.travel/query?lon=-3.5&lat=50.5&radius_km=80&content=routes,pois,events,groups,posts

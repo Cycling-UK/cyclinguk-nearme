@@ -2,6 +2,7 @@
 
 namespace Drupal\cyclinguk_nearme\Plugin\views\argument;
 
+use Drupal\views\Annotation\ViewsArgument;
 use Drupal\views\Plugin\views\argument\StringArgument;
 
 /**

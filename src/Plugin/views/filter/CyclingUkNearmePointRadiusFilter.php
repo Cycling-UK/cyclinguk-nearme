@@ -3,10 +3,14 @@
 namespace Drupal\cyclinguk_nearme\Plugin\views\filter;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\views\Annotation\ViewsFilter;
 use Drupal\views\Plugin\views\filter\FilterPluginBase;
 
 /**
  * Simple filter to handle filtering geographical results by type.
+ *
+ * @ingroup views_filter_handlers
  *
  * @ViewsFilter("cyclinguk_nearme_pointradius")
  */
@@ -58,7 +62,7 @@ class CyclingUkNearmePointRadiusFilter extends FilterPluginBase {
   /**
    * Build the exposed form with autocomplete placename and hidden lat, lon.
    */
-  public function buildExposedForm(&$form, FormStateInterface $form_state) {
+  public function buildExposedForm(&$form, FormStateInterface $form_state): void {
     if (empty($this->options['exposed'])) {
       return;
     }
@@ -88,7 +92,7 @@ class CyclingUkNearmePointRadiusFilter extends FilterPluginBase {
   /**
    *
    */
-  public function submitExposed(&$form, FormStateInterface $form_state) {
+  public function submitExposed(&$form, FormStateInterface $form_state): void {
     $values = [
       'lat' => $form_state->getValue('lat'),
       'lon' => $form_state->getValue('lon'),
@@ -100,21 +104,30 @@ class CyclingUkNearmePointRadiusFilter extends FilterPluginBase {
   /**
    * Add a pointradius "where clause" to the query.
    */
-  public function query() {
+  public function query(): void {
     $this->query->addWhere($this->options['group'], 'pointradius', $this->value);
   }
 
   /**
    * Display summary of configured values for view admin.
+   *
+   * @return string|\Drupal\Core\StringTranslation\TranslatableMarkup
    */
-  public function adminSummary() {
+  public function adminSummary(): string|TranslatableMarkup {
     if ($this->isAGroup()) {
       return $this->t('grouped');
     }
     if (!empty($this->options['exposed'])) {
       return $this->t('exposed');
     }
-    return print_r($this->value, TRUE);
+    if (isset($this->value['lat'])) {
+      return t('Latitude: @lat, Longitude: @lon, Radius: @rad miles', [
+        '@lat' => $this->value['lat'],
+        '@lon' => $this->value['lon'],
+        '@rad' => $this->value['miles'],
+      ]);
+    }
+    return '';
   }
 
 }

@@ -3,6 +3,7 @@
 namespace Drupal\cyclinguk_nearme\Plugin\views\query;
 
 use Drupal\Core\Render\Markup;
+use Drupal\views\Annotation\ViewsQuery;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
@@ -47,14 +48,16 @@ class CyclingUkNearmeQuery extends QueryPluginBase {
    *
    * @var array[string]
    */
-  protected array $latLongRadius = ['lat' => 51.5, 'lon' => -1.5, 'miles' => 80];
+  protected array $latLongRadius = ['lat' => 54.5, 'lon' => -2.5, 'miles' => 1000];
+
+  protected array $tags = [];
 
   /**
    * The type of API method we're calling.
    *
    * @var string
    */
-  protected string $methodType = 'latlonrad';
+  protected string $methodType = '';
 
   /**
    * The UUID of the area to show, for 'area_id' method.
@@ -117,6 +120,21 @@ class CyclingUkNearmeQuery extends QueryPluginBase {
   }
 
   /**
+   * @param string|array $tags Comma-separated list of tags, or array of tags.
+   *
+   * @return void
+   */
+  public function addTags($tags) {
+    if (is_array($tags)) {
+      $this->tags = array_unique(array_merge($this->tags, $tags));
+    }
+    else {
+      // ToDo array merge?
+      $this->tags = array_unique(array_merge($this->tags, preg_split('/, ?/', $tags)));
+    }
+  }
+
+  /**
    * This is the main function that calls the remote API.
    *
    * Values to set: $view->result, $view->total_rows, $view->execute_time,
@@ -148,6 +166,12 @@ class CyclingUkNearmeQuery extends QueryPluginBase {
             'data' => $this->routeId,
           ];
           break;
+
+        default:
+          $view->result[] = [
+            'type' => 'none',
+          ];
+          break;
       }
       return;
     }
@@ -161,39 +185,51 @@ class CyclingUkNearmeQuery extends QueryPluginBase {
     else {
       $request_url = $config->get('cyclinguk_nearme.api_get_url_test');
     }
+    $query_arguments = [];
     switch ($this->methodType) {
       case 'latlonrad':
-        $request_url .= '?lat=' . $this->latLongRadius['lat'] . '&lon=' . $this->latLongRadius['lon'] . '&radius_km=' . ($this->latLongRadius['miles'] * 8 / 5);
+        $query_arguments[] = 'lat=' . $this->latLongRadius['lat'];
+        $query_arguments[] = 'lon=' . $this->latLongRadius['lon'];
+        $query_arguments[] = 'radius_km=' . ($this->latLongRadius['miles'] * 8 / 5);
         break;
 
       case 'area_id':
-        $request_url .= '?area=' . $this->areaId;
+        $query_arguments[] = 'area=' . $this->areaId;
         break;
 
       case 'area_name':
-        $request_url .= '?area_name=' . $this->areaName;
+        $query_arguments[] = 'area_name=' . $this->areaName;
         break;
 
       case 'route_id':
         // @todo variable radius.
-        $request_url .= '?route=' . $this->routeId . '&radius=0.2';
+        $query_arguments[] = 'route=' . $this->routeId;
+        $query_arguments[] = 'radius=0.2';
         break;
 
       case  'route_name':
         // @todo variable radius.
-        $request_url .= '?route_name=' . $this->routeName . '&radius=0.2';
+        $query_arguments[] = 'route_name=' . $this->routeName;
+        $query_arguments[] = 'radius=0.2';
         break;
 
     }
+    if ($this->tags) {
+      $encoded_tags = array_map('rawurlencode', $this->tags);
+      $query_arguments[] = 'tags=' . implode(',', $encoded_tags);
+    }
+
     // Initialize the pager and let it modify the "query" to add limits (offset and limit).
     $view->initPager();
     $view->pager->query();
 
     // Add content type filter, if needed.
     if ($this->contentTypes) {
-      $request_url .= '&content=' . implode(',', $this->contentTypes);
+      $query_arguments[] = 'content=' . implode(',', $this->contentTypes);
     }
-
+    if (count($query_arguments)) {
+      $request_url .= '?' . implode('&', $query_arguments);
+    }
     // To debug API requests, uncomment:
     // $this->messenger()->addMessage('API Request: ' . $request_url);
     // Request the remote API results with an httpClient.
@@ -201,6 +237,10 @@ class CyclingUkNearmeQuery extends QueryPluginBase {
     $client = \Drupal::httpClient();
     $response = NULL;
     try {
+      if ($config->get('cyclinguk_nearme.debug_messages')) {
+        $this->messenger()
+          ->addStatus(MarkUp::create('DEBUG: API Request URL: <pre style="font-size: 85%; line-height: 1.2;">' . $request_url . '</pre>'));
+      }
       $response = $client->request('get', $request_url);
       $response_code = $response->getStatusCode();
     } catch (RequestException $e) {
@@ -226,6 +266,10 @@ class CyclingUkNearmeQuery extends QueryPluginBase {
       } catch (\JsonException $e) {
         watchdog_exception('cyclinguk_nearme', $e);
         return;
+      }
+      if ($config->get('cyclinguk_nearme.debug_messages')) {
+        $this->messenger()
+          ->addStatus(MarkUp::create('DEBUG: API Results: <pre style="font-size: 85%; line-height: 1.2;">' . print_r($data, TRUE) . '</pre>'));
       }
       foreach ($data->results as $type => $result) {
         foreach ($result as $uuid) {
@@ -292,6 +336,10 @@ class CyclingUkNearmeQuery extends QueryPluginBase {
    */
   public function getItemTypes() {
     return $this->contentTypes;
+  }
+
+  public function getTagsArray() {
+    return $this->tags;
   }
 
   /**
