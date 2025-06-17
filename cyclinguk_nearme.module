@@ -301,7 +301,7 @@ function template_preprocess_cyclinguk_nearme_map(&$variables): void {
     $variables['map_json']['showPOIFilter'] = (bool) $options['filter_panel_details']['filter_pois'];
     $variables['map_json']['showRouteFilter'] = (bool) $options['filter_panel_details']['filter_routes'];
     $variables['map_json']['showGroupFilter'] = (bool) $options['filter_panel_details']['filter_groups'];
-    $variables['map_json']['showEventFilter'] = $options['filter_panel_details']['filter_events'] && $options['show_types']['events'];
+    $variables['map_json']['showEventFilter'] = (bool) $options['filter_panel_details']['filter_events'];
   }
 
   // Elevation
