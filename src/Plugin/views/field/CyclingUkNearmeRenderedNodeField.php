@@ -28,8 +28,11 @@ class CyclingUkNearmeRenderedNodeField extends RenderedEntity {
    * If we've found a node, let the RenderedEntity field render it.
    *
    * Needed because we might not match a node, and a NULL _entity causes errors.
+   *
+   * Returns either a string, some HTML markup, or a build array (not mentioned in the
+   * inherited documentation!).
    */
-  public function render(ResultRow $values): MarkupInterface {
+  public function render(ResultRow $values): string|array|MarkupInterface {
     if ($values->_entity) {
       return parent::render($values);
     }
