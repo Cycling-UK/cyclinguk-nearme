@@ -191,8 +191,8 @@ function template_preprocess_cyclinguk_nearme_map(&$variables): void {
 
   $variables['#attached']['library'][] = 'cycle_travel_mapping/autocomplete';
   $variables['#attached']['library'][] = 'cycle_travel_mapping/map';
-  $variables['#attached']['library'][] = 'cyclinguk_nearme/autocomplete';
-  $variables['#attached']['library'][] = 'cyclinguk_nearme/map';
+  //$variables['#attached']['library'][] = 'cyclinguk_nearme/autocomplete';
+  //$variables['#attached']['library'][] = 'cyclinguk_nearme/map';
 
   /** @var \Drupal\views\ViewExecutable $view */
   $view = $variables['view'];
@@ -203,48 +203,49 @@ function template_preprocess_cyclinguk_nearme_map(&$variables): void {
 
   $variables['map_height'] = $options['map_height'];
   if ($options['preset'] !== 'none') {
-    $variables['map_json']['preset'] = $options['preset'];
+    $map_data['preset'] = $options['preset'];
   }
 
-  $variables['map_json']['zoom'] = $options['zoom'];
-  $variables['map_json']['scrollproof'] = $options['scrollproof'];
+  $map_data['zoom'] = $options['zoom'];
+  $map_data['scrollproof'] = $options['scrollproof'];
 
   //  Viewport and map configuration.
   if ($result['type'] === 'latlonrad') {
     /** @var array $pointradius */
     $pointradius = $result['data'];
-    $variables['map_json']['lat'] = $pointradius['lat'];
-    $variables['map_json']['lon'] = $pointradius['lon'];
+    $map_data['lat'] = $pointradius['lat'];
+    $map_data['lon'] = $pointradius['lon'];
     // Convert radius to zoom level.
     // ToDo: convert miles to map zoom based on map width (so probably using JavaScript).
     if ($pointradius['miles'] < 10) {
-      $variables['map_json']['zoom'] = 11;
+      $map_data['zoom'] = 11;
     }
     elseif ($pointradius['miles'] < 20) {
-      $variables['map_json']['zoom'] = 9;
+      $map_data['zoom'] = 9;
     }
     elseif ($pointradius['miles'] < 40) {
-      $variables['map_json']['zoom'] = 9;
+      $map_data['zoom'] = 9;
     }
     elseif ($pointradius['miles'] < 80) {
-      $variables['map_json']['zoom'] = 8;
+      $map_data['zoom'] = 8;
     }
+
     else {
-      $variables['map_json']['zoom'] = 7;
+      $map_data['zoom'] = 7;
     }
   }
 
   // Main content.
   switch ($result['type']) {
     case 'postcode':
-      $variables['map_json']['postcode'] = $result['data'];
+      $map_data['postcode'] = $result['data'];
       break;
     case 'route_id':
-      $variables['map_json']['routeID'] = $result['data'];
+      $map_data['routeID'] = $result['data'];
       break;
     // Not possible: 'route_name'
     case 'area_name':
-      $variables['map_json']['areaName'] = $result['data'];
+      $map_data['areaName'] = $result['data'];
       break;
   }
   // Types to display come from the Query, modified by any item type filter added to the View.
@@ -253,19 +254,19 @@ function template_preprocess_cyclinguk_nearme_map(&$variables): void {
   $view_query = $view->getQuery();
   if ($view_query) {
     $item_types = $view_query->getItemTypes();
-    $variables['map_json']['showRoutes'] = in_array('routes', $item_types);
-    $variables['map_json']['showPOIs'] = in_array('pois', $item_types);
-    $variables['map_json']['showGroups'] = in_array('groups', $item_types);
-    $variables['map_json']['showEvents'] = in_array('events', $item_types);
+    $map_data['showRoutes'] = in_array('routes', $item_types);
+    $map_data['showPOIs'] = in_array('pois', $item_types);
+    $map_data['showGroups'] = in_array('groups', $item_types);
+    $map_data['showEvents'] = in_array('events', $item_types);
     $tags = $view_query->getTagsArray();
     if ($tags) {
-      $variables['map_json']['tags'] = $tags;
+      $map_data['tags'] = $tags;
     }
   }
 
-  $variables['map_json']['loadPois'] = (bool) $options['load_pois'];
-  $variables['map_json']['allRoutes'] = (bool) $options['show_all_routes'];
-  #$variables['map_json']['radius'] = 0.5;
+  $map_data['loadPois'] = (bool) $options['load_pois'];
+  $map_data['allRoutes'] = (bool) $options['show_all_routes'];
+  #$map_data['radius'] = 0.5;
 
   $panel_options = [
     'yes' => TRUE,
@@ -275,59 +276,61 @@ function template_preprocess_cyclinguk_nearme_map(&$variables): void {
   ];
 
   // Side panel.
-  $variables['map_json']['sidepanel'] = $panel_options[$options['side_panel_details']['side_panel']];
+  $map_data['sidepanel'] = $panel_options[$options['side_panel_details']['side_panel']];
   if ($options['side_panel_details']['side_panel'] !== 'no') {
-    $variables['map_json']['showPOISidepanel'] = (bool) $options['side_panel_details']['show_pois'];
-    $variables['map_json']['showRouteSidepanel'] = (bool) $options['side_panel_details']['show_routes'];
-    $variables['map_json']['expandSoloList'] = (bool) $options['side_panel_details']['expand_solo_list'];
-    $variables['map_json']['hideIfEmpty'] = (bool) $options['side_panel_details']['hide_if_empty'];
-    $variables['map_json']['preferRoutes'] = (bool) $options['side_panel_details']['prefer_routes'];
-    $variables['map_json']['preferFlagship'] = (bool) $options['side_panel_details']['prefer_flagship'];
-    $variables['map_json']['panToResults'] = (bool) $options['side_panel_details']['pan_to_results'];
+    $map_data['showPOISidepanel'] = (bool) $options['side_panel_details']['show_pois'];
+    $map_data['showRouteSidepanel'] = (bool) $options['side_panel_details']['show_routes'];
+    $map_data['expandSoloList'] = (bool) $options['side_panel_details']['expand_solo_list'];
+    $map_data['hideIfEmpty'] = (bool) $options['side_panel_details']['hide_if_empty'];
+    $map_data['preferRoutes'] = (bool) $options['side_panel_details']['prefer_routes'];
+    $map_data['preferFlagship'] = (bool) $options['side_panel_details']['prefer_flagship'];
+    $map_data['panToResults'] = (bool) $options['side_panel_details']['pan_to_results'];
   }
 
   // Map controls
-  $variables['map_json']['showIdeas'] = (bool) $options['map_controls']['show_ideas'];
-  $variables['map_json']['showSearch'] = (bool) $options['map_controls']['show_search'];
-  $variables['map_json']['showFullScreen'] = (bool) $options['map_controls']['show_fullscreen'];
+  $map_data['showIdeas'] = (bool) $options['map_controls']['show_ideas'];
+  $map_data['showSearch'] = (bool) $options['map_controls']['show_search'];
+  $map_data['showFullScreen'] = (bool) $options['map_controls']['show_fullscreen'];
   if ($options['map_controls']['show_search']) {
-    $variables['map_json']['searchRoutes'] = (bool) $options['map_controls']['search_routes'];
-    $variables['map_json']['searchPOIs'] = (bool) $options['map_controls']['search_pois'];
+    $map_data['searchRoutes'] = (bool) $options['map_controls']['search_routes'];
+    $map_data['searchPOIs'] = (bool) $options['map_controls']['search_pois'];
   }
 
   // Filter panel.
-  $variables['map_json']['filterPanel'] = $panel_options[$options['filter_panel_details']['filter_panel']];
+  $map_data['filterPanel'] = $panel_options[$options['filter_panel_details']['filter_panel']];
   if ($options['filter_panel_details']['filter_panel'] !== 'no') {
-    $variables['map_json']['showPOIFilter'] = (bool) $options['filter_panel_details']['filter_pois'];
-    $variables['map_json']['showRouteFilter'] = (bool) $options['filter_panel_details']['filter_routes'];
-    $variables['map_json']['showGroupFilter'] = (bool) $options['filter_panel_details']['filter_groups'];
-    $variables['map_json']['showEventFilter'] = (bool) $options['filter_panel_details']['filter_events'];
+    $map_data['showPOIFilter'] = (bool) $options['filter_panel_details']['filter_pois'];
+    $map_data['showRouteFilter'] = (bool) $options['filter_panel_details']['filter_routes'];
+    $map_data['showGroupFilter'] = (bool) $options['filter_panel_details']['filter_groups'];
+    $map_data['showEventFilter'] = (bool) $options['filter_panel_details']['filter_events'];
   }
 
   // Elevation
   if ($options['elevation']) {
-    $variables['map_json']['elevation'] = TRUE;    // show elevation? (true, false, 'closed': requires routeID or routePlanner)
+    $map_data['elevation'] = TRUE;    // show elevation? (true, false, 'closed': requires routeID or routePlanner)
   }
 
   // JS interaction
   if ($options['callback'] ?? FALSE) {
-    $variables['map_json']['callback'] = $options['callback'];
+    $map_data['callback'] = $options['callback'];
   }
 
   // Route-planner
   if ($options['route_planner']) {
-    $variables['map_json']['routePlanner'] = TRUE;    // show route-planner?
+    $map_data['routePlanner'] = TRUE;    // show route-planner?
   }
 
   // Feature flags for testing
   if ($options['enable_sorting']) {
-    $variables['map_json']['enableSorting'] = TRUE;
+    $map_data['enableSorting'] = TRUE;
   }
 
-  $variables['map_json'] = json_encode($variables['map_json'], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
+ // $map_data = json_encode($map_data, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
+
+  $variables['#attached']['drupalSettings']['cyclinguk_nearme']['map_data'] = $map_data;
 
   if (Drupal::config('cyclinguk_nearme.settings')->get('cyclinguk_nearme.debug_messages')) {
-    $html = 'DEBUG: MAP configuration JSON: <pre style="font-size: 85%; line-height: 1.2;">' . print_r($variables['map_json'], TRUE) . '</pre>';
+    $html = 'DEBUG: MAP configuration JSON: <pre style="font-size: 85%; line-height: 1.2;">' . print_r($map_data, TRUE) . '</pre>';
     $message_html = Markup::create($html);
     Drupal::messenger()->addStatus($message_html);
   }

@@ -27,8 +27,11 @@ map:
         attributes:
           crossorigin: anonymous
   js:
+    'js/loadmap.js': { attributes: { type: module } }
     https://cycling-uk-d9.cycle.travel/maps/third_party/maplibre-gl.js: { type: external }
     https://cycling-uk-d9.cycle.travel/maps/third_party/autocomplete.js: { type: external }
     https://cycling-uk-d9.cycle.travel/maps/cycling_uk/scripts/app_bundle.js: { attributes: { type: module } }
     https://cycling-uk-d9.cycle.travel/maps/cycling_uk/scripts/simple_map.js: { attributes: { type: module } }
+  dependencies:
+    - core/drupalSettings
 

@@ -1,11 +1,5 @@
 <div id="map-embedded" class="mapframe" style="height: {{ map_height }}; background: #ccc;">
   <div style="padding: 1em;">Map will appear here.</div>
-</div>
-<!--suppress JSUnusedLocalSymbols, JSUnresolvedFunction -->
-<script>
-  window.addEventListener("load", (event) => {
-    initialiseMap('map-embedded', {{ map_json|raw }}
-    );
-  })
-</script>
+</div><!--suppress JSUnusedLocalSymbols, JSUnresolvedFunction -->
+
 
