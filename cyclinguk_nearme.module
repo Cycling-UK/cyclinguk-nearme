@@ -189,8 +189,7 @@ function cyclinguk_nearme_assemble_node_data(Node $node): array {
  */
 function template_preprocess_cyclinguk_nearme_map(&$variables): void {
 
-  $variables['#attached']['library'][] = 'cycle_travel_mapping/autocomplete';
-  $variables['#attached']['library'][] = 'cycle_travel_mapping/map';
+  $variables['#attached']['library'][] = 'cycle_travel_mapping/cycle_travel_mapping';
   //$variables['#attached']['library'][] = 'cyclinguk_nearme/autocomplete';
   //$variables['#attached']['library'][] = 'cyclinguk_nearme/map';
 
