@@ -125,13 +125,13 @@ class CyclingUkNearmeQuery extends QueryPluginBase {
    * @return void
    */
   public function addTags($tags) {
-    if (is_array($tags)) {
-      $this->tags = array_unique(array_merge($this->tags, $tags));
+    if (!is_array($tags)) {
+      $tags = preg_split('/, ?/', $tags);
     }
-    else {
-      // ToDo array merge?
-      $this->tags = array_unique(array_merge($this->tags, preg_split('/, ?/', $tags)));
-    }
+    $merged_tags = array_merge($this->tags, $tags);
+    $unique_tags = array_unique($merged_tags);
+    // Re-index the array, as array_unique preserves indices.
+    $this->tags = array_values($unique_tags);
   }
 
   /**
