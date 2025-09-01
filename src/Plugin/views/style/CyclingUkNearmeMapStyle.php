@@ -36,6 +36,7 @@ class CyclingUkNearmeMapStyle extends StylePluginBase {
     $options['load_pois'] = ['default' => TRUE];
     $options['show_all_routes'] = ['default' => TRUE];
     $options['scrollproof'] = ['default' => TRUE];
+    $options['point_min_zoom'] = ['default' => 7];
     $options['side_panel_details'] = [
       'contains' => [
         'side_panel' => ['default' => 'closed'],
@@ -125,8 +126,11 @@ class CyclingUkNearmeMapStyle extends StylePluginBase {
       '#title' => t('Scrollproof (require Ctrl+scroll to zoom the map)'),
       '#default_value' => $this->options['scrollproof'],
     ];
-    // Radius.
-    // Tags.
+    $form['point_min_zoom'] = [
+      '#title' => $this->t('Minimum zoom level to show points'),
+      '#type' => 'number',
+      '#default_value' => $this->options['point_min_zoom'],
+    ];
     // Side panel options.
     $form['side_panel_details'] = [
       '#type' => 'details',
@@ -273,9 +277,6 @@ class CyclingUkNearmeMapStyle extends StylePluginBase {
         ['invisible' => [':input[name="style_options[filter_panel_details][filter_panel]"]' => ['value' => 'no']]],
       '#default_value' => $this->options['filter_panel_details']['filter_events'],
     ];
-    // @todo add these options so they can be turned off:
-    // Presets:
-    // county, area, route, location, hub, multiple, specified, routeplanner.
     $form['elevation'] = [
       '#title' => $this->t('Show elevation profile (requires RouteID or Route Planner'),
       '#type' => 'checkbox',

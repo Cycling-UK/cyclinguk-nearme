@@ -207,6 +207,7 @@ function template_preprocess_cyclinguk_nearme_map(&$variables): void {
 
   $map_data['zoom'] = $options['zoom'];
   $map_data['scrollproof'] = $options['scrollproof'];
+  $map_data['poiMinZoom'] = $options['point_min_zoom'];
 
   //  Viewport and map configuration.
   if ($result['type'] === 'latlonrad') {
