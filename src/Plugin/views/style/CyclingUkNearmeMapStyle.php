@@ -31,12 +31,19 @@ class CyclingUkNearmeMapStyle extends StylePluginBase {
   protected function defineOptions(): array {
     $options = parent::defineOptions();
     $options['map_height'] = ['default' => '500px'];
-    $options['zoom'] = ['default' => 8];
     $options['preset'] = ['default' => 'none'];
     $options['load_pois'] = ['default' => TRUE];
     $options['show_all_routes'] = ['default' => TRUE];
     $options['scrollproof'] = ['default' => TRUE];
-    $options['point_min_zoom'] = ['default' => 7];
+    $options['centre_and_zoom'] = [
+      'contains' => [
+        'force_center_and_zoom' => ['default' => FALSE],
+        'latitude' => ['default' => 54.8],
+        'longitude' => ['default' => -3],
+        'zoom' => ['default' => 5],
+        'point_min_zoom' => ['default' => 0],
+      ],
+    ];
     $options['side_panel_details'] = [
       'contains' => [
         'side_panel' => ['default' => 'closed'],
@@ -86,10 +93,44 @@ class CyclingUkNearmeMapStyle extends StylePluginBase {
       '#type' => 'textfield',
       '#default_value' => $this->options['map_height'],
     ];
-    $form['zoom'] = [
-      '#title' => $this->t('Zoom level'),
+    $form['centre_and_zoom'] = [
+      '#title' => $this->t('Centre and Zoom settings'),
+      '#type' => 'details',
+      '#open' => TRUE,
+    ];
+    $form['centre_and_zoom']['force_center_and_zoom'] = [
+      '#title' => $this->t('Force map center and zoom'),
+      '#description' => $this->t('If checked, the map will pan and zoom to the values below. Values will be overridden by any point-and-radius filter. If unchecked, the map will pan and zoom to fit the data.'),
+      '#type' => 'checkbox',
+      '#default_value' => $this->options['centre_and_zoom']['force_center_and_zoom'],
+    ];
+    $form['centre_and_zoom']['latitude'] = [
+      '#title' => $this->t('Latitude'),
       '#type' => 'number',
-      '#default_value' => $this->options['zoom'],
+      '#max' => 90,
+      '#min' => -90,
+      '#step' => 'any',
+      '#default_value' => $this->options['centre_and_zoom']['latitude'],
+    ];
+    $form['centre_and_zoom']['longitude'] = [
+      '#title' => $this->t('Longitude'),
+      '#type' => 'number',
+      '#max' => 180,
+      '#min' => -180,
+      '#step' => 'any',
+      '#default_value' => $this->options['centre_and_zoom']['longitude'],
+    ];
+    $form['centre_and_zoom']['zoom'] = [
+      '#title' => $this->t('Zoom'),
+      '#type' => 'number',
+      '#default_value' => $this->options['centre_and_zoom']['zoom'],
+    ];
+    $form['centre_and_zoom']['point_min_zoom'] = [
+      '#title' => $this->t('Minimum zoom level to display points'),
+      '#description' => $this->t('Point markers (and clusters) will disappear if the map is zoomed out lower than this level.'),
+      '#type' => 'number',
+      '#min' => 0,
+      '#default_value' => $this->options['centre_and_zoom']['point_min_zoom'],
     ];
     $form['preset'] = [
       '#title' => $this->t('Preset'),
@@ -125,11 +166,6 @@ class CyclingUkNearmeMapStyle extends StylePluginBase {
       '#type' => 'checkbox',
       '#title' => t('Scrollproof (require Ctrl+scroll to zoom the map)'),
       '#default_value' => $this->options['scrollproof'],
-    ];
-    $form['point_min_zoom'] = [
-      '#title' => $this->t('Minimum zoom level to show points'),
-      '#type' => 'number',
-      '#default_value' => $this->options['point_min_zoom'],
     ];
     // Side panel options.
     $form['side_panel_details'] = [
