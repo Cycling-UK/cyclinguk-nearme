@@ -189,9 +189,13 @@ function cyclinguk_nearme_assemble_node_data(Node $node): array {
  */
 function template_preprocess_cyclinguk_nearme_map(&$variables): void {
 
-  $variables['#attached']['library'][] = 'cycle_travel_mapping/cycle_travel_mapping';
-  // $variables['#attached']['library'][] = 'cyclinguk_nearme/autocomplete';
-  //$variables['#attached']['library'][] = 'cyclinguk_nearme/map';
+  if (Drupal::moduleHandler()->moduleExists('cycle_travel_mapping')) {
+    $variables['#attached']['library'][] = 'cycle_travel_mapping/cycle_travel_mapping';
+  }
+  else {
+    $variables['#attached']['library'][] = 'cyclinguk_nearme/autocomplete';
+    $variables['#attached']['library'][] = 'cyclinguk_nearme/map';
+  }
 
   /** @var \Drupal\views\ViewExecutable $view */
   $view = $variables['view'];
@@ -211,8 +215,8 @@ function template_preprocess_cyclinguk_nearme_map(&$variables): void {
     $map_data['zoom'] = $options['centre_and_zoom']['zoom'];
   }
 
-  $map_data['scrollproof'] = $options['scrollproof'];
-  $map_data['poiMinZoom'] = $options['centre_and_zoom']['point_min_zoom'];
+  $map_data['scrollproof'] = (bool) $options['scrollproof'];
+  $map_data['poiMinZoom'] = (int) $options['centre_and_zoom']['point_min_zoom'];
 
   //  Viewport and map configuration.
   if ($result['type'] === 'latlonrad') {
@@ -330,12 +334,12 @@ function template_preprocess_cyclinguk_nearme_map(&$variables): void {
     $map_data['enableSorting'] = TRUE;
   }
 
- // $map_data = json_encode($map_data, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
+  // $map_data = json_encode($map_data, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
 
   $variables['#attached']['drupalSettings']['cyclinguk_nearme']['map_data'] = $map_data;
 
   if (Drupal::config('cyclinguk_nearme.settings')->get('cyclinguk_nearme.debug_messages')) {
-    $html = 'DEBUG: MAP configuration JSON: <pre style="font-size: 85%; line-height: 1.2;">' . print_r($map_data, TRUE) . '</pre>';
+    $html = 'DEBUG: MAP configuration JSON: <pre style="font-size: 85%; line-height: 1.2;">' . json_encode($map_data, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . '</pre>';
     $message_html = Markup::create($html);
     Drupal::messenger()->addStatus($message_html);
   }

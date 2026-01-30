@@ -41,7 +41,7 @@ class CyclingUkNearmeMapStyle extends StylePluginBase {
         'latitude' => ['default' => 54.8],
         'longitude' => ['default' => -3],
         'zoom' => ['default' => 5],
-        'point_min_zoom' => ['default' => 0],
+        'point_min_zoom' => ['default' => 1],
       ],
     ];
     $options['side_panel_details'] = [
@@ -129,7 +129,7 @@ class CyclingUkNearmeMapStyle extends StylePluginBase {
       '#title' => $this->t('Minimum zoom level to display points'),
       '#description' => $this->t('Point markers (and clusters) will disappear if the map is zoomed out lower than this level.'),
       '#type' => 'number',
-      '#min' => 0,
+      '#min' => 1,
       '#default_value' => $this->options['centre_and_zoom']['point_min_zoom'],
     ];
     $form['preset'] = [

@@ -6,8 +6,8 @@
       <paths name="bear">
         <serverdata>
           <mappings>
-            <mapping deploy="/var/www/demo.fonant.com/site/modules/cyclinguk_nearme" local="$PROJECT_DIR$" web="/" />
-            <mapping deploy="/var/www/drupal10/web" local="$PROJECT_DIR$/../../drupal10/web/" web="/" />
+            <mapping deploy="demo.fonant.com/site/modules/cyclinguk_nearme" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="drupal10/web" local="$PROJECT_DIR$/../../drupal10/web/" web="/" />
           </mappings>
         </serverdata>
       </paths>

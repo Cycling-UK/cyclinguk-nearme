@@ -3,7 +3,9 @@
 namespace Drupal\cyclinguk_nearme\Plugin\views\query;
 
 use Drupal\Core\Render\Markup;
+use Drupal\Core\Utility\Error;
 use Drupal\views\Annotation\ViewsQuery;
+use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
@@ -255,16 +257,16 @@ class CyclingUkNearmeQuery extends QueryPluginBase {
         $message = $e->getMessage();
       }
       $this->messenger()->addError($message);
-      watchdog_exception('cyclinguk_nearme', $e);
+      $this->logException($e);
     } catch (GuzzleException $e) {
-      watchdog_exception('cyclinguk_nearme', $e);
+      $this->logException($e);
       return;
     }
     if ($response && $response_code == 200) {
       try {
         $data = json_decode($response->getBody()->getContents(), FALSE, 512, JSON_THROW_ON_ERROR);
       } catch (\JsonException $e) {
-        watchdog_exception('cyclinguk_nearme', $e);
+        $this->logException($e);
         return;
       }
       if ($config->get('cyclinguk_nearme.debug_messages')) {
@@ -281,7 +283,7 @@ class CyclingUkNearmeQuery extends QueryPluginBase {
       try {
         $this->loadEntities($view->result);
       } catch (\Exception $e) {
-        watchdog_exception('cyclinguk_nearme', $e);
+        $this->logException($e);
         return;
       }
       // $this->messenger->addMessage(print_r($this->sortBy, TRUE));
@@ -419,6 +421,18 @@ class CyclingUkNearmeQuery extends QueryPluginBase {
         $row->node_title = '';
       }
     }
+  }
+
+  /**
+   * Log an exception to watchdog.
+   *
+   * @param \Exception $e
+   *
+   * @return void
+   */
+  protected function logException(Exception $e): void {
+    $logger = \Drupal::logger('cyclinguk_nearme');
+    Error::logException($logger, $e);
   }
 
 }

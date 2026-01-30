@@ -1,0 +1,7 @@
+administer cyclinguk_nearme settings:
+  title: 'Administer cyclinguk_nearme settings'
+  description: 'Grants access to configure settings for the Cycling UK Near Me module.'
+
+view cyclinguk_nearme debug messages:
+  title: 'View cyclinguk_nearme debug messages'
+  description: 'Grants access to view debug messages from Cycling UK Near Me module.'
